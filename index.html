@@ -1,0 +1,76 @@
+<html>
+<head>
+<title> EPG Web API </title>
+<script type="text/javascript" src="xml2json.js"></script>
+<script type="text/javascript" src="json2.js"></script>
+<script type="text/javascript">
+function parseXml(xml) {
+   var dom = null;
+   if (window.DOMParser) {
+      try { 
+         dom = (new DOMParser()).parseFromString(xml, "text/xml"); 
+      } 
+      catch (e) { dom = null; }
+   }
+   else if (window.ActiveXObject) {
+      try {
+         dom = new ActiveXObject('Microsoft.XMLDOM');
+         dom.async = false;
+         if (!dom.loadXML(xml)) // parse error ..
+            window.alert(dom.parseError.reason + dom.parseError.srcText);
+      } 
+      catch (e) { dom = null; }
+   }
+   else
+      alert("oops");
+   return dom;
+}
+var convertXml = function() {
+   document.getElementById('json').value = "If you can still see this text, then something didn't work...";
+   	var rawFile = new XMLHttpRequest();
+   	var url = "epg.xml";
+   	var allText = "";
+    rawFile.open("GET", url, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                allText = rawFile.responseText;
+                //alert(allText);
+            }
+        }
+    }
+    rawFile.send(null);
+   var xml = allText;//'<e>Hello text</e>';//document.getElementById('xml').value;
+   var json = xml2json( parseXml(xml), "  ");
+   obj = JSON.parse(json);
+   	var channelId = getParameterByName('channelId');
+   	var date = getParameterByName('date');
+   	var json_text = '';
+   	if (channelId != '' && date != '') 
+   	{
+   		for (var i = 0; i < obj.tv.length; i++) {
+   			if(obj.tv[i].programme_channel==channelId && obj.tv[i].programme_start.substring(0,8) == date)
+   				json_text+=JSON.stringify(obj.tv[i])+',';
+   		};	
+   	};
+   	console.log(json_text);
+   //showJson(json);
+}
+window.onload = function() { convertXml(); }
+function showJson(s) { document.getElementById("json").innerHTML = s.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+</script>
+</head>
+
+<body>
+    <article id="json">...</article>
+</body>
+</html>
