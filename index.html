@@ -43,21 +43,35 @@ var convertXml = function() {
         }
     }
     rawFile.send(null);
-   var xml = allText;//'<e>Hello text</e>';//document.getElementById('xml').value;
-   var json = xml2json( parseXml(xml), "  ");
-   obj = JSON.parse(json);
-   	var channelId = getParameterByName('channelId');
+    var xml = allText;
+    var json = xml2json( parseXml(xml), "  ");
+    obj = JSON.parse(json);
+    
+    var channelId = getParameterByName('channelId');
    	var date = getParameterByName('date');
+    var channel_list = getParameterByName('channellist');
    	var json_text = '';
-   	if (channelId != '' && date != '') 
+   	//searcg epg by channel id and date
+    if (channelId != '' && date != '') 
    	{
    		for (var i = 0; i < obj.tv.length; i++) {
    			if(obj.tv[i].programme_channel==channelId && obj.tv[i].programme_start.substring(0,8) == date)
    				json_text+=JSON.stringify(obj.tv[i])+',';
    		};	
    	};
-   	console.log(json_text);
-   //showJson(json);
+
+    //get channel list
+    if (channel_list) 
+    {
+      for (var i = 0; i < obj.tv.length; i++) {
+        if (obj.tv[i].channel_id) 
+          {
+            json_text+=JSON.stringify(obj.tv[i])+',';
+          };
+      };
+    };
+
+    showJson(json_text);
 }
 window.onload = function() { convertXml(); }
 function showJson(s) { document.getElementById("json").innerHTML = s.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
